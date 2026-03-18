@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YODAIS – Flujo de Producción | Alma ERP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0D1B2A;
+    --blue: #1A4E8C;
+    --sky: #2E86DE;
+    --teal: #0B7A75;
+    --orange: #E07B39;
+    --red: #C0392B;
+    --green: #27AE60;
+    --purple: #7D3C98;
+    --yellow: #F39C12;
+    --light: #F0F4F8;
+    --mid: #D1DDE8;
+    --text: #1A2733;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0D1B2A 0%, #1A4E8C 100%);
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 3px solid var(--orange);
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .header-left h1 {
+    font-family: var(--mono); font-size: 1.4rem; font-weight: 600;
+    color: #fff; letter-spacing: -0.5px;
+  }
+  .header-left h1 span { color: var(--orange); }
+  .header-left p { font-size: 0.78rem; color: #9BB5CC; margin-top: 0.25rem; font-weight: 300; letter-spacing: 0.5px; text-transform: uppercase; }
+  .tabs {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .tab {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+    padding: 0.45rem 1rem; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05); color: #9BB5CC;
+    cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tab.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+  /* ── MAIN ── */
+  .content { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── SECTION HEADER ── */
+  .section-title {
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--orange);
+    margin-bottom: 1.5rem; padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-container {
+    display: grid; gap: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 0;
+    cursor: pointer; position: relative;
+  }
+
+  .flow-line {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 60px; flex-shrink: 0;
+  }
+  .flow-dot {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 1rem; font-weight: 700; color: #fff;
+    flex-shrink: 0; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+  }
+  .flow-step:hover .flow-dot { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(255,255,255,0.12); }
+  .flow-connector {
+    width: 2px; background: rgba(255,255,255,0.1);
+    flex-grow: 1; min-height: 32px;
+  }
+  .flow-step:last-child .flow-connector { display: none; }
+
+  .flow-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 1.25rem 1.5rem;
+    margin-left: 1rem; margin-bottom: 12px; flex: 1;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .flow-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .flow-step:hover .flow-card { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateX(3px); }
+
+  .flow-card h3 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+  .flow-card p { font-size: 0.82rem; color: #9BB5CC; line-height: 1.5; }
+  .flow-card .tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .tag {
+    font-family: var(--mono); font-size: 0.65rem; padding: 0.2rem 0.55rem;
+    border-radius: 3px; font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  .detail-panel {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 1.5rem; margin: 1rem 0 1rem 4.5rem;
+    display: none; animation: slideDown 0.2s ease;
+  }
+  .detail-panel.open { display: block; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .detail-panel h4 { font-size: 0.8rem; font-weight: 700; color: var(--orange); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+  .detail-panel ul { list-style: none; }
+  .detail-panel ul li {
+    font-size: 0.82rem; color: #CBD8E6; padding: 0.35rem 0 0.35rem 1.2rem; position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .detail-panel ul li::before { content: '→'; position: absolute; left: 0; color: var(--sky); font-size: 0.7rem; top: 0.38rem; }
+  .detail-panel .atipico {
+    background: rgba(224, 123, 57, 0.08); border: 1px solid rgba(224,123,57,0.2);
+    border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.75rem;
+  }
+  .detail-panel .atipico h5 { font-size: 0.7rem; color: var(--orange); font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+
+  /* ── STEP COLORS ── */
+  .step-1 .flow-dot { background: var(--blue); }
+  .step-1 .flow-card::before { background: var(--sky); }
+  .step-2 .flow-dot { background: var(--teal); }
+  .step-2 .flow-card::before { background: var(--teal); }
+  .step-3 .flow-dot { background: var(--purple); }
+  .step-3 .flow-card::before { background: var(--purple); }
+  .step-4 .flow-dot { background: var(--orange); }
+  .step-4 .flow-card::before { background: var(--orange); }
+  .step-5 .flow-dot { background: var(--yellow); }
+  .step-5 .flow-card::before { background: var(--yellow); }
+  .step-6 .flow-dot { background: var(--green); }
+  .step-6 .flow-card::before { background: var(--green); }
+
+  .tag-mp { background: rgba(30,78,140,0.3); color: #6BAEE8; border: 1px solid rgba(46,134,222,0.3); }
+  .tag-maquila { background: rgba(11,122,117,0.3); color: #5ECFC7; border: 1px solid rgba(11,122,117,0.4); }
+  .tag-conf { background: rgba(125,60,152,0.3); color: #C39BD3; border: 1px solid rgba(125,60,152,0.4); }
+  .tag-pt { background: rgba(39,174,96,0.3); color: #7AE0A1; border: 1px solid rgba(39,174,96,0.4); }
+  .tag-alert { background: rgba(192,57,43,0.25); color: #F1948A; border: 1px solid rgba(192,57,43,0.4); }
+  .tag-odp { background: rgba(243,156,18,0.2); color: #FAD7A0; border: 1px solid rgba(243,156,18,0.3); }
+
+  /* ── BODEGAS DIAGRAM ── */
+  .bodegas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .bodega-card {
+    background: rgba(255,255,255,0.04); border-radius: 10px; padding: 1.25rem;
+    border-top: 3px solid; text-align: center;
+    transition: transform 0.2s;
+  }
+  .bodega-card:hover { transform: translateY(-3px); }
+  .bodega-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .bodega-card h3 { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; font-family: var(--mono); }
+  .bodega-card p { font-size: 0.75rem; color: #9BB5CC; line-height: 1.4; }
+  .bodega-card .badge { font-family: var(--mono); font-size: 0.6rem; display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px; margin-top: 0.6rem; font-weight: 600; }
+
+  .b-mp { border-color: var(--sky); }
+  .b-mp .badge { background: rgba(46,134,222,0.2); color: var(--sky); }
+  .b-maquila { border-color: var(--teal); }
+  .b-maquila .badge { background: rgba(11,122,117,0.2); color: #5ECFC7; }
+  .b-conf { border-color: var(--purple); }
+  .b-conf .badge { background: rgba(125,60,152,0.2); color: #C39BD3; }
+  .b-pt { border-color: var(--green); }
+  .b-pt .badge { background: rgba(39,174,96,0.2); color: #7AE0A1; }
+
+  .arrow-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; margin: 0.75rem 0; flex-wrap: wrap;
+  }
+  .arrow-box {
+    background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.72rem; color: #9BB5CC;
+    font-family: var(--mono); display: flex; align-items: center; gap: 0.5rem;
+  }
+  .arrow-sym { color: var(--orange); font-size: 1rem; }
+
+  /* ── CRONOGRAMA ── */
+  .crono-grid { display: grid; gap: 0.6rem; }
+  .crono-row {
+    display: grid; grid-template-columns: 60px 100px 140px 1fr 180px;
+    gap: 0; border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s;
+  }
+  .crono-row:hover { transform: translateX(4px); }
+  .crono-header { background: rgba(255,255,255,0.08); }
+  .crono-cell {
+    padding: 0.75rem 0.9rem; font-size: 0.78rem; color: #CBD8E6;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center;
+  }
+  .crono-cell:last-child { border-right: none; }
+  .crono-cell.dia { font-family: var(--mono); font-weight: 700; color: #fff; font-size: 0.72rem; background: rgba(0,0,0,0.2); }
+  .crono-cell.fecha { font-size: 0.7rem; color: #9BB5CC; font-family: var(--mono); }
+  .crono-cell.fase { font-weight: 700; font-size: 0.72rem; font-family: var(--mono); }
+  .crono-cell.resp { font-size: 0.72rem; color: #9BB5CC; }
+  .fase-s { color: #6BAEE8; background: rgba(30,78,140,0.15); }
+  .fase-l { color: #FAD7A0; background: rgba(243,156,18,0.08); }
+  .fase-p { color: #7AE0A1; background: rgba(39,174,96,0.08); }
+  .fase-pr { color: #C39BD3; background: rgba(125,60,152,0.1); }
+  .fase-c { color: #F1948A; background: rgba(192,57,43,0.1); }
+  .crono-header .crono-cell { color: #fff; font-weight: 700; font-size: 0.72rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.07); }
+
+  /* ── RIESGOS ── */
+  .risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; }
+  .risk-card {
+    background: rgba(255,255,255,0.03); border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.07); padding: 1.25rem;
+    border-left: 3px solid;
+    transition: transform 0.2s;
+  }
+  .risk-card:hover { transform: translateY(-2px); }
+  .risk-card h4 { font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+  .risk-card p { font-size: 0.78rem; color: #9BB5CC; line-height: 1.5; }
+  .risk-badges { display: flex; gap: 0.4rem; margin-bottom: 0.7rem; }
+  .risk-badge { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 3px; }
+  .rb-high { background: rgba(192,57,43,0.25); color: #F1948A; }
+  .rb-med { background: rgba(243,156,18,0.2); color: #FAD7A0; }
+  .rb-low { background: rgba(39,174,96,0.2); color: #7AE0A1; }
+  .risk-high { border-color: var(--red); }
+  .risk-med { border-color: var(--yellow); }
+  .risk-low { border-color: var(--green); }
+  .risk-mitigation { background: rgba(255,255,255,0.04); border-radius: 6px; padding: 0.6rem 0.75rem; margin-top: 0.75rem; font-size: 0.75rem; color: #CBD8E6; }
+  .risk-mitigation strong { color: var(--sky); font-family: var(--mono); font-size: 0.65rem; display: block; margin-bottom: 0.25rem; text-transform: uppercase; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: #9BB5CC; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .crono-row { grid-template-columns: 1fr; }
+    .header { padding: 1rem; }
+    .header-left h1 { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>YODAIS <span>//</span> Flujo de Producción</h1>
+    <p>Plan de Implementación · Módulo Producción · Alma ERP · 2025</p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('flujo', this)">Flujo Operativo</button>
+    <button class="tab" onclick="showPanel('bodegas', this)">Estructura Bodegas</button>
+    <button class="tab" onclick="showPanel('crono', this)">Cronograma</button>
+    <button class="tab" onclick="showPanel('riesgos', this)">Riesgos</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ══════════════ PANEL: FLUJO ══════════════ -->
+  <div class="panel active" id="panel-flujo">
+    <div class="section-title">↓ Flujo completo de producción — haz clic en cada etapa para ver detalles</div>
+    <div class="flow-container">
+
+      <!-- ETAPA 1 -->
+      <div class="flow-step step-1" onclick="toggleDetail('d1')">
+        <div class="flow-line">
+          <div class="flow-dot">1</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Ingreso de Materia Prima</h3>
+          <p>La tela se compra y registra en <strong style="color:#fff">kilogramos (kg)</strong>. El sistema convierte automáticamente a metros según la tabla de conversión por referencia.</p>
+          <div class="tags">
+            <span class="tag tag-mp">Bodega MP</span>
+            <span class="tag tag-odp">Conversión kg→m</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d1">
+        <h4>Detalles – Ingreso Materia Prima</h4>
+        <ul>
+          <li>Crear orden de compra con unidad kg</li>
+          <li>Al recibir, Alma convierte automáticamente usando la tabla de factores por referencia de tela</li>
+          <li>Saldo disponible se expresa en metros para consumo en BOM</li>
+          <li>Datos maestros requeridos: referencia de tela, factor de conversión, precio por kg</li>
+        </ul>
+      </div>
+
+      <!-- ETAPA 2 -->
+      <div class="flow-step step-2" onclick="toggleDetail('d2')">
+        <div class="flow-line">
+          <div class="flow-dot">2</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Lanzamiento de Orden de Producción (ODP)</h3>
+          <p>Se lanza una ODP vinculada a una <strong style="color:#fff">ficha técnica (BOM)</strong>. La ficha consume tela en metros y produce camisetas. La ODP queda <strong style="color:#FAD7A0">Abierta</strong> hasta completar el lote.</p>
+          <div class="tags">
+            <span class="tag tag-mp">Bodega MP</span>
+            <span class="tag tag-odp">ODP Abierta</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d2">
+        <h4>Detalles – Orden de Producción</h4>
+        <ul>
+          <li>BOM define: metros de tela + insumos + % merma + cantidad esperada de camisetas</li>
+          <li>Una ODP puede contener múltiples referencias (talla, color) del mismo modelo</li>
+          <li>Estado: Abierta → Parcial → Cerrada</li>
+          <li>No se cierra hasta que el 100% del lote ingrese a Producto Terminado</li>
+          <li>El costeo se calcula al cierre con los movimientos reales</li>
+        </ul>
+      </div>
+
+      <!-- ETAPA 3 -->
+      <div class="flow-step step-3" onclick="toggleDetail('d3')">
+        <div class="flow-line">
+          <div class="flow-dot">3</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Traslado a Maquila (Cantidad Real Post-Corte)</h3>
+          <p>Después del corte interno, se genera un traslado <strong style="color:#fff">MP → Maquila</strong> con la cantidad <strong style="color:#5ECFC7">real cortada</strong>, no la programada. La diferencia se registra como merma de corte.</p>
+          <div class="tags">
+            <span class="tag tag-mp">Bodega MP</span>
+            <span class="tag tag-maquila">Bodega Maquila</span>
+            <span class="tag tag-alert">Cantidad real ≠ programada</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d3">
+        <h4>Detalles – Traslado a Maquila</h4>
+        <ul>
+          <li>El traslado se genera DESPUÉS del proceso de corte interno</li>
+          <li>Se registra la cantidad de piezas cortadas, no las piezas programadas</li>
+          <li>La diferencia queda documentada como merma de corte en la ODP</li>
+          <li>Movimiento: Bodega MP → Bodega Maquila con referencia a la ODP</li>
+        </ul>
+        <div class="atipico">
+          <h5>⚠ Caso Atípico</h5>
+          <p style="font-size:0.78rem; color:#CBD8E6">Si se programaron 100 y se cortaron 99: se trasladan 99 a Maquila. La unidad faltante puede devolverse a MP o reponerse por el confeccionista.</p>
+        </div>
+      </div>
+
+      <!-- ETAPA 4 -->
+      <div class="flow-step step-4" onclick="toggleDetail('d4')">
+        <div class="flow-line">
+          <div class="flow-dot">4</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Distribución a Confeccionistas</h3>
+          <p>Desde Maquila se reparte el lote entre <strong style="color:#fff">N confeccionistas</strong>. Cada uno tiene su propia bodega virtual en Alma. El saldo de Maquila se distribuye a <strong style="color:#C39BD3">CONF_01…CONF_N</strong>.</p>
+          <div class="tags">
+            <span class="tag tag-maquila">Bodega Maquila</span>
+            <span class="tag tag-conf">Bodegas CONF_N</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d4">
+        <h4>Detalles – Distribución</h4>
+        <ul>
+          <li>Cada confeccionista activo tiene una bodega virtual (CONF_01, CONF_02…CONF_30)</li>
+          <li>Los traslados parciales Maquila → CONF_XX reducen el saldo de Maquila</li>
+          <li>Un mismo lote puede distribuirse en diferentes fechas a diferentes confeccionistas</li>
+          <li>El total distribuido no debe superar la cantidad traslada desde MP</li>
+        </ul>
+      </div>
+
+      <!-- ETAPA 5 -->
+      <div class="flow-step step-5" onclick="toggleDetail('d5')">
+        <div class="flow-line">
+          <div class="flow-dot">5</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Ingresos Parciales a Producto Terminado</h3>
+          <p>Cada confeccionista entrega su parte en diferentes momentos. Cada entrega genera una <strong style="color:#fff">recepción parcial</strong> vinculada a la ODP padre. El ingreso puede venir de <strong style="color:#FAD7A0">Maquila o CONF_XX</strong> directamente a PT.</p>
+          <div class="tags">
+            <span class="tag tag-conf">Bodegas CONF_N</span>
+            <span class="tag tag-pt">Bodega PT</span>
+            <span class="tag tag-odp">Recepción parcial</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d5">
+        <h4>Detalles – Ingresos Parciales</h4>
+        <ul>
+          <li>Cada recepción parcial está vinculada a la ODP padre original</li>
+          <li>Alma acumula el total de ingresos parciales vs. la cantidad objetivo de la ODP</li>
+          <li>Mientras queden saldos en bodegas CONF_XX, la ODP permanece Abierta</li>
+          <li>Ruta de ingreso: CONF_XX → PT  o  Maquila → PT (si el confeccionista entrega en planta)</li>
+        </ul>
+      </div>
+
+      <!-- ETAPA 6 -->
+      <div class="flow-step step-6" onclick="toggleDetail('d6')">
+        <div class="flow-line">
+          <div class="flow-dot">6</div>
+          <div class="flow-connector"></div>
+        </div>
+        <div class="flow-card">
+          <h3>Cierre de Orden de Producción</h3>
+          <p>La ODP se cierra cuando <strong style="color:#7AE0A1">todo el lote está en PT</strong>. Se calculan las diferencias finales, se genera el costeo real y se ajustan sobrantes o faltantes documentados.</p>
+          <div class="tags">
+            <span class="tag tag-pt">Bodega PT</span>
+            <span class="tag tag-odp">ODP Cerrada</span>
+            <span class="tag tag-alert">Verificar saldos CONF = 0</span>
+          </div>
+        </div>
+      </div>
+      <div class="detail-panel" id="d6">
+        <h4>Detalles – Cierre ODP</h4>
+        <ul>
+          <li>Prerrequisito: saldo en todas las bodegas CONF_XX asociadas debe ser 0</li>
+          <li>Se compara cantidad programada vs. cantidad real ingresada a PT</li>
+          <li>Las diferencias se documentan con causa (merma corte, defecto, reposición)</li>
+          <li>El costeo real se calcula con los movimientos efectivos, no los programados</li>
+        </ul>
+        <div class="atipico">
+          <h5>📋 Manejo de Diferencias al Cierre</h5>
+          <p style="font-size:0.78rem;color:#CBD8E6"><strong style="color:#6BAEE8">Opción A:</strong> Devolver pieza defectuosa a MP → ODP cierra con cantidad real.<br>
+          <strong style="color:#7AE0A1">Opción B:</strong> Confeccionista repone la pieza → entrada adicional a PT → ODP cierra con 100%.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ PANEL: BODEGAS ══════════════ -->
+  <div class="panel" id="panel-bodegas">
+    <div class="section-title">Estructura de bodegas virtuales en Alma ERP</div>
+
+    <div class="bodegas-grid">
+      <div class="bodega-card b-mp">
+        <div class="icon">🏭</div>
+        <h3>Bodega MP</h3>
+        <p>Materia prima. Ingreso en <strong>kg</strong>, consumo en <strong>metros</strong>. Origen del flujo.</p>
+        <span class="badge">MATERIA_PRIMA</span>
+      </div>
+      <div class="bodega-card b-maquila">
+        <div class="icon">✂️</div>
+        <h3>Bodega Maquila</h3>
+        <p>Punto intermedio. Recibe piezas post-corte y distribuye a confeccionistas.</p>
+        <span class="badge">MAQUILA_CENTRAL</span>
+      </div>
+      <div class="bodega-card b-conf">
+        <div class="icon">🧵</div>
+        <h3>Bodegas Confeccionistas</h3>
+        <p>Una bodega virtual por confeccionista activo. Escala de 10 a 30+ según operación.</p>
+        <span class="badge">CONF_01 → CONF_N</span>
+      </div>
+      <div class="bodega-card b-pt">
+        <div class="icon">📦</div>
+        <h3>Bodega Producto Terminado</h3>
+        <p>Destino final. Recibe camisetas terminadas de todos los confeccionistas.</p>
+        <span class="badge">PROD_TERMINADO</span>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:2rem">Flujo de mercancía entre bodegas</div>
+
+    <div class="arrow-row">
+      <div class="arrow-box">🏭 MP</div>
+      <div class="arrow-sym">→</div>
+      <div class="arrow-box">✂️ Maquila <span style="color:#9BB5CC;font-size:0.6rem;margin-left:0.4rem">(cantidad real post-corte)</span></div>
+      <div class="arrow-sym">→</div>
+      <div class="arrow-box">🧵 CONF_01..N</div>
+      <div class="arrow-sym">→</div>
+      <div class="arrow-box">📦 PT</div>
+    </div>
+
+    <div class="arrow-row" style="margin-top:0.5rem">
+      <div class="arrow-box" style="border-color:rgba(192,57,43,0.3);color:#F1948A">⚠ Devolución: PT / CONF → MP (pieza defectuosa)</div>
+    </div>
+    <div class="arrow-row">
+      <div class="arrow-box" style="border-color:rgba(39,174,96,0.3);color:#7AE0A1">✓ Reposición: Entrada adicional CONF → PT (sin nueva ODP)</div>
+    </div>
+
+    <div class="section-title" style="margin-top:2rem">Reglas de configuración en Alma ERP</div>
+    <div class="risk-grid">
+      <div class="risk-card risk-high" style="border-left-color:var(--sky)">
+        <h4>Doble Unidad de Medida</h4>
+        <p>Los artículos de tela deben configurarse con UoM de compra (kg) y UoM de consumo (metros). La tabla de conversión debe existir por referencia.</p>
+      </div>
+      <div class="risk-card" style="border-left-color:var(--purple)">
+        <h4>Bodegas Escalables</h4>
+        <p>Las bodegas de confeccionistas se crean como plantilla. Activar o desactivar según la operación activa. No eliminar para preservar historial.</p>
+      </div>
+      <div class="risk-card" style="border-left-color:var(--green)">
+        <h4>ODP Multi-Recepción</h4>
+        <p>Alma debe permitir múltiples recepciones parciales contra una misma ODP. La ODP no cierra automáticamente; cierre es manual y validado.</p>
+      </div>
+      <div class="risk-card" style="border-left-color:var(--orange)">
+        <h4>Traslado con Ajuste</h4>
+        <p>El movimiento MP → Maquila debe admitir una cantidad diferente a la programada. La diferencia se documenta como merma de corte en la ODP.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ PANEL: CRONOGRAMA ══════════════ -->
+  <div class="panel" id="panel-crono">
+    <div class="section-title">Cronograma de sensibilización e implementación — 9 días hábiles</div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#2E86DE"></div> Sensibilización</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F39C12"></div> Levantamiento</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#27AE60"></div> Parametrización</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7D3C98"></div> Pruebas</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C0392B"></div> Cierre</div>
+    </div>
+
+    <div class="crono-grid">
+      <div class="crono-row crono-header">
+        <div class="crono-cell">Día</div>
+        <div class="crono-cell">Fecha</div>
+        <div class="crono-cell">Fase</div>
+        <div class="crono-cell">Actividad Principal</div>
+        <div class="crono-cell">Responsable</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D1</div>
+        <div class="crono-cell fecha">Lun 21 Abr</div>
+        <div class="crono-cell fase fase-s">Sensibilización</div>
+        <div class="crono-cell">Kick-off con líderes de área: presentación del proyecto y objetivos</div>
+        <div class="crono-cell resp">Gerencia + Consultor</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D2</div>
+        <div class="crono-cell fecha">Mar 22 Abr</div>
+        <div class="crono-cell fase fase-s">Sensibilización</div>
+        <div class="crono-cell">Recorrido por bodega: mapeo físico de MP, Maquila y Confeccionistas</div>
+        <div class="crono-cell resp">Líder Producción</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D3</div>
+        <div class="crono-cell fecha">Mié 23 Abr</div>
+        <div class="crono-cell fase fase-l">Levantamiento</div>
+        <div class="crono-cell">Inventario de fichas técnicas existentes y estructura de BOM</div>
+        <div class="crono-cell resp">Consultor ERP</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D4</div>
+        <div class="crono-cell fecha">Jue 24 Abr</div>
+        <div class="crono-cell fase fase-l">Levantamiento</div>
+        <div class="crono-cell">Entrevista a operarios de corte y maquila: flujos reales de salida</div>
+        <div class="crono-cell resp">Consultor + Operarios</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D5</div>
+        <div class="crono-cell fecha">Vie 25 Abr</div>
+        <div class="crono-cell fase fase-l">Levantamiento</div>
+        <div class="crono-cell">Documentar casos atípicos: mermas, reprocesos y faltantes</div>
+        <div class="crono-cell resp">Líder Producción</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D6</div>
+        <div class="crono-cell fecha">Lun 28 Abr</div>
+        <div class="crono-cell fase fase-p">Parametrización</div>
+        <div class="crono-cell">Configurar bodegas en Alma: MP, Maquila, Confeccionistas piloto (3)</div>
+        <div class="crono-cell resp">Consultor ERP</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D7</div>
+        <div class="crono-cell fecha">Mar 29 Abr</div>
+        <div class="crono-cell fase fase-p">Parametrización</div>
+        <div class="crono-cell">Cargar fichas técnicas piloto + configurar conversión kg→metros</div>
+        <div class="crono-cell resp">Consultor ERP</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D8</div>
+        <div class="crono-cell fecha">Mié 30 Abr</div>
+        <div class="crono-cell fase fase-pr">Pruebas</div>
+        <div class="crono-cell">Simulación completa: ODP → traslado → parciales → cierre con ajustes</div>
+        <div class="crono-cell resp">Equipo completo</div>
+      </div>
+      <div class="crono-row">
+        <div class="crono-cell dia">D9</div>
+        <div class="crono-cell fecha">Jue 1 May</div>
+        <div class="crono-cell fase fase-c">Cierre</div>
+        <div class="crono-cell">Revisión de resultados, ajustes finales y entrega de manual de usuario</div>
+        <div class="crono-cell resp">Consultor + Gerencia</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;padding:1rem 1.25rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-size:0.78rem;color:#9BB5CC;">
+      <strong style="color:#6BAEE8;font-family:var(--mono);font-size:0.68rem;display:block;margin-bottom:0.4rem">NOTA IMPORTANTE</strong>
+      Las fechas son referenciales. El cronograma real debe ajustarse según disponibilidad del equipo YODAIS y el consultor de Alma ERP. Se recomienda no comprimir las fases de levantamiento (D3–D5) para garantizar una parametrización precisa.
+    </div>
+  </div>
+
+  <!-- ══════════════ PANEL: RIESGOS ══════════════ -->
+  <div class="panel" id="panel-riesgos">
+    <div class="section-title">Matriz de riesgos identificados</div>
+    <div class="risk-grid">
+
+      <div class="risk-card risk-high">
+        <div class="risk-badges">
+          <span class="risk-badge rb-high">Impacto: Alto</span>
+          <span class="risk-badge rb-high">Prob: Alta</span>
+        </div>
+        <h4>Conversión incorrecta kg→metros</h4>
+        <p>Si la tabla de conversión tiene errores, todos los consumos de tela quedarán mal registrados, generando desfases de inventario irreversibles.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Calibrar la tabla con 5 referencias piloto antes de lanzar. Validar con el encargado de bodega de MP.
+        </div>
+      </div>
+
+      <div class="risk-card risk-high">
+        <div class="risk-badges">
+          <span class="risk-badge rb-high">Impacto: Alto</span>
+          <span class="risk-badge rb-med">Prob: Media</span>
+        </div>
+        <h4>Confeccionistas no notifican ingresos parciales</h4>
+        <p>Si los confeccionistas no reportan sus entregas a tiempo, las ODP quedan abiertas indefinidamente y el inventario de PT es inexacto.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Definir protocolo de notificación + designar responsable en Maquila para registrar cada entrega el mismo día.
+        </div>
+      </div>
+
+      <div class="risk-card risk-med">
+        <div class="risk-badges">
+          <span class="risk-badge rb-med">Impacto: Medio</span>
+          <span class="risk-badge rb-high">Prob: Alta</span>
+        </div>
+        <h4>ODP cerrada antes de completar el lote</h4>
+        <p>Un cierre prematuro genera sobrantes flotantes sin ODP asociada, rompiendo la trazabilidad del lote.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Parametrizar validación de cantidad mínima para cierre. Cierre manual con aprobación de líder de producción.
+        </div>
+      </div>
+
+      <div class="risk-card risk-med">
+        <div class="risk-badges">
+          <span class="risk-badge rb-med">Impacto: Medio</span>
+          <span class="risk-badge rb-med">Prob: Media</span>
+        </div>
+        <h4>Acumulación de sobrantes en bodegas CONF</h4>
+        <p>Piezas que nunca regresan crean saldos fantásticos en bodegas virtuales, inflando el inventario reportado.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Política clara: devolución a MP o reposición máximo 5 días hábiles después del corte.
+        </div>
+      </div>
+
+      <div class="risk-card risk-high">
+        <div class="risk-badges">
+          <span class="risk-badge rb-high">Impacto: Alto</span>
+          <span class="risk-badge rb-low">Prob: Baja</span>
+        </div>
+        <h4>Rechazo del equipo operativo al cambio</h4>
+        <p>El personal de maquila y bodega puede resistir el nuevo proceso de registro en Alma, volviendo a prácticas manuales.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Sensibilización activa días 1–5. Capacitación práctica antes del piloto. Manual visual de usuario.
+        </div>
+      </div>
+
+      <div class="risk-card risk-high">
+        <div class="risk-badges">
+          <span class="risk-badge rb-high">Impacto: Alto</span>
+          <span class="risk-badge rb-high">Prob: Alta</span>
+        </div>
+        <h4>Fichas técnicas (BOM) incompletas o desactualizadas</h4>
+        <p>Si los BOM tienen errores en rendimientos o insumos, el consumo de tela en la ODP no reflejará la realidad, afectando el costeo.</p>
+        <div class="risk-mitigation">
+          <strong>Plan de mitigación</strong>
+          Auditoría completa de BOM en el Día 3, antes de iniciar parametrización. Validar con diseño y producción.
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:2rem" class="section-title">Casos atípicos y su manejo</div>
+    <div class="risk-grid">
+      <div class="risk-card" style="border-left-color:var(--orange)">
+        <h4>⚠ Merma de corte (ej: 99 de 100)</h4>
+        <p>Una pieza queda con defecto irreparable en el proceso de corte interno.</p>
+        <div class="risk-mitigation">
+          <strong>Opción A – Devolución</strong>
+          Pieza defectuosa → Bodega MP. ODP cierra con 99 unidades reales. Nota de ajuste con causa.
+        </div>
+        <div class="risk-mitigation" style="margin-top:0.4rem">
+          <strong>Opción B – Reposición</strong>
+          Confeccionista repone pieza. Entrada adicional PT. ODP cierra con 100 unidades.
+        </div>
+      </div>
+      <div class="risk-card" style="border-left-color:var(--green)">
+        <h4>✓ Excedente de producción</h4>
+        <p>Salen más unidades de las programadas en la ODP.</p>
+        <div class="risk-mitigation">
+          <strong>Manejo recomendado</strong>
+          Crear ajuste de inventario en PT con nota explicativa. Cerrar ODP con cantidad real y documentar el excedente.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+</script>
+</body>
+</html>
