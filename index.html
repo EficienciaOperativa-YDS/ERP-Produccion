@@ -166,7 +166,19 @@
   .tag-alert { background: rgba(192,57,43,0.25); color: #F1948A; border: 1px solid rgba(192,57,43,0.4); }
   .tag-odp { background: rgba(243,156,18,0.2); color: #FAD7A0; border: 1px solid rgba(243,156,18,0.3); }
 
-  /* ── BODEGAS DIAGRAM ── */
+  /* ── MERMAID FLUJOGRAMA ── */
+  #mermaid-container svg { width: 100%; height: auto; }
+  .mermaid-legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 1rem; font-size: 0.72rem; color: #9BB5CC;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; font-family: var(--mono);
+  }
+  .mermaid-legend-item { display: flex; align-items: center; gap: 6px; }
+  .mermaid-legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+
   .bodegas-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -270,10 +282,11 @@
 <div class="header">
   <div class="header-left">
     <h1>YODAIS <span>//</span> Flujo de Producción</h1>
-    <p>Plan de Implementación · Módulo Producción · Alma ERP · 2025</p>
+    <p>Plan de Implementación · Módulo Producción · Alma ERP · 2026</p>
   </div>
   <div class="tabs">
     <button class="tab active" onclick="showPanel('flujo', this)">Flujo Operativo</button>
+    <button class="tab" onclick="showPanel('flujograma', this)">Flujograma</button>
     <button class="tab" onclick="showPanel('bodegas', this)">Estructura Bodegas</button>
     <button class="tab" onclick="showPanel('crono', this)">Cronograma</button>
     <button class="tab" onclick="showPanel('riesgos', this)">Riesgos</button>
@@ -453,6 +466,21 @@
     </div>
   </div>
 
+  <!-- ══════════════ PANEL: FLUJOGRAMA ══════════════ -->
+  <div class="panel" id="panel-flujograma">
+    <div class="section-title">Flujograma completo del proceso de producción — generado con Mermaid</div>
+
+    <div id="mermaid-container"></div>
+
+    <div class="mermaid-legend">
+      <div class="mermaid-legend-item"><div class="mermaid-legend-dot" style="background:#1D9E75"></div> Bodega / almacén</div>
+      <div class="mermaid-legend-item"><div class="mermaid-legend-dot" style="background:#185FA5"></div> Proceso / acción</div>
+      <div class="mermaid-legend-item"><div class="mermaid-legend-dot" style="background:#BA7517"></div> Decisión</div>
+      <div class="mermaid-legend-item"><div class="mermaid-legend-dot" style="background:#A32D2D"></div> Caso atípico</div>
+      <div class="mermaid-legend-item"><div class="mermaid-legend-dot" style="background:#534AB7"></div> Estado ODP</div>
+    </div>
+  </div>
+
   <!-- ══════════════ PANEL: BODEGAS ══════════════ -->
   <div class="panel" id="panel-bodegas">
     <div class="section-title">Estructura de bodegas virtuales en Alma ERP</div>
@@ -552,35 +580,35 @@
         <div class="crono-cell fecha">Lun 16 Mar</div>
         <div class="crono-cell fase fase-s">Sensibilización</div>
         <div class="crono-cell">Kick-off con líderes de área: presentación del proyecto y objetivos</div>
-        <div class="crono-cell resp">Gerencia + Consultor</div>
+        <div class="crono-cell resp">Gerente · Jfe. Operaciones · Jfe. Eficiencia Op.</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D2</div>
         <div class="crono-cell fecha">Mar 17 Mar</div>
         <div class="crono-cell fase fase-s">Sensibilización</div>
         <div class="crono-cell">Recorrido por bodega: mapeo físico de MP, Maquila y Confeccionistas</div>
-        <div class="crono-cell resp">Líder Producción</div>
+        <div class="crono-cell resp">Jefe de Operaciones</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D3</div>
         <div class="crono-cell fecha">Mié 18 Mar</div>
         <div class="crono-cell fase fase-l">Levantamiento</div>
         <div class="crono-cell">Inventario de fichas técnicas existentes y estructura de BOM</div>
-        <div class="crono-cell resp">Consultor ERP</div>
+        <div class="crono-cell resp">Jfe. Eficiencia Op. + Consultor ERP</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D4</div>
         <div class="crono-cell fecha">Jue 19 Mar</div>
         <div class="crono-cell fase fase-l">Levantamiento</div>
         <div class="crono-cell">Entrevista a operarios de corte y maquila: flujos reales de salida</div>
-        <div class="crono-cell resp">Consultor + Operarios</div>
+        <div class="crono-cell resp">Jfe. Eficiencia Op. + Consultor ERP</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D5</div>
         <div class="crono-cell fecha">Vie 20 Mar</div>
         <div class="crono-cell fase fase-l">Levantamiento</div>
         <div class="crono-cell">Documentar casos atípicos: mermas, reprocesos y faltantes</div>
-        <div class="crono-cell resp">Líder Producción</div>
+        <div class="crono-cell resp">Jfe. Eficiencia Op. + Consultor ERP</div>
       </div>
 
       <!-- FERIADO -->
@@ -598,14 +626,14 @@
         <div class="crono-cell fecha">Mar 24 Mar</div>
         <div class="crono-cell fase fase-p">Parametrización</div>
         <div class="crono-cell">Configurar bodegas en Alma: MP, Maquila, Confeccionistas piloto (3)</div>
-        <div class="crono-cell resp">Consultor ERP</div>
+        <div class="crono-cell resp">Jfe. Eficiencia Op. + Consultor ERP</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D7</div>
         <div class="crono-cell fecha">Mié 25 Mar</div>
         <div class="crono-cell fase fase-p">Parametrización</div>
         <div class="crono-cell">Cargar fichas técnicas piloto + configurar conversión kg→metros</div>
-        <div class="crono-cell resp">Consultor ERP</div>
+        <div class="crono-cell resp">Jfe. Eficiencia Op. + Consultor ERP</div>
       </div>
       <div class="crono-row">
         <div class="crono-cell dia">D8</div>
@@ -657,8 +685,8 @@
 
     <div style="margin-top:1.5rem;padding:1rem 1.25rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;font-size:0.78rem;color:#9BB5CC;">
       <strong style="color:#6BAEE8;font-family:var(--mono);font-size:0.68rem;display:block;margin-bottom:0.4rem">CALENDARIO DE FERIADOS CONSIDERADOS</strong>
-      🚫 Lun 24 Mar — Feriado nacional &nbsp;|&nbsp; 🚫 Jue 2 Abr — Jueves Santo &nbsp;|&nbsp; 🚫 Vie 3 Abr — Viernes Santo<br><br>
-      El período Lun 31 Mar – Mié 2 Abr se recomienda usar como colchón para ajustes, correcciones de parametrización o capacitación complementaria antes del go-live del 6 de abril.
+      🚫 Lun 23 Mar 2026 — Feriado nacional &nbsp;|&nbsp; 🚫 Jue 2 Abr 2026 — Jueves Santo &nbsp;|&nbsp; 🚫 Vie 3 Abr 2026 — Viernes Santo<br><br>
+      El período Lun 30 Mar – Mié 1 Abr 2026 se recomienda usar como colchón para ajustes, correcciones de parametrización o capacitación complementaria antes del go-live del 6 de abril.
     </div>
   </div>
 
@@ -774,12 +802,122 @@
 
 </div>
 
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: 'IBM Plex Sans, sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: 'IBM Plex Sans, sans-serif',
+    primaryColor:         dark ? '#1C3A5E' : '#E6F1FB',
+    primaryTextColor:     dark ? '#B5D4F4' : '#0C447C',
+    primaryBorderColor:   dark ? '#378ADD' : '#185FA5',
+    secondaryColor:       dark ? '#0A3D32' : '#E1F5EE',
+    secondaryTextColor:   dark ? '#9FE1CB' : '#085041',
+    secondaryBorderColor: dark ? '#1D9E75' : '#0F6E56',
+    tertiaryColor:        dark ? '#3A2E00' : '#FAEEDA',
+    tertiaryTextColor:    dark ? '#FAC775' : '#412402',
+    tertiaryBorderColor:  dark ? '#BA7517' : '#854F0B',
+    lineColor:            dark ? '#9c9a92' : '#73726c',
+    textColor:            dark ? '#c2c0b6' : '#3d3d3a',
+    edgeLabelBackground:  dark ? '#1a1a18' : '#ffffff',
+    clusterBkg:           dark ? '#1a1a18' : '#f4f8ff',
+    clusterBorder:        dark ? '#2E4A6E' : '#B5D4F4',
+    background:           dark ? '#111'    : '#fff',
+  },
+  flowchart: { curve: 'basis', padding: 20 }
+});
+
+const diagram = `flowchart TD
+    A([🏁 Inicio]) --> B
+
+    subgraph MP["📦 Bodega Materia Prima"]
+        B["Compra de tela\\n(ingreso en kg)"]
+        B --> C["Conversión automática\\nkg → metros"]
+    end
+
+    C --> D
+
+    subgraph ODP_OPEN["📋 Orden de Producción — ABIERTA"]
+        D["Lanzamiento ODP\\ncon ficha técnica BOM"]
+        D --> E["Ficha técnica consume\\ntela en metros\\n→ produce camisetas"]
+    end
+
+    E --> F["✂️ Corte interno"]
+    F --> G{{"¿Cantidad cortada\\n= programada?"}}
+
+    G -- "Sí" --> H
+    G -- "No, hay merma" --> AT1
+
+    AT1["⚠️ Caso atípico:\\nmerma de corte"]
+    AT1 --> AT1B{{"¿Cómo reponer?"}}
+    AT1B -- "Devolver a MP" --> AT1C["Pieza regresa\\na Bodega MP\\n+ nota de ajuste"]
+    AT1B -- "Confeccionista repone" --> AT1D["Reposición posterior\\nen recepción parcial"]
+    AT1C --> H
+    AT1D --> H
+
+    subgraph MQ["🧵 Bodega Maquila"]
+        H["Traslado MP → Maquila\\n(cantidad REAL post-corte)"]
+        H --> I["Distribución a\\nconfeccionistas"]
+    end
+
+    subgraph CONF["👗 Bodegas Confeccionistas — CONF_01 a CONF_N"]
+        I --> J1["CONF_01\\nparte del lote"]
+        I --> J2["CONF_02\\nparte del lote"]
+        I --> J3["CONF_N\\n..."]
+    end
+
+    J1 --> K["Entrega parcial\\na planta"]
+    J2 --> K
+    J3 --> K
+
+    K --> L["Recepción parcial\\nvinculada a ODP padre"]
+    L --> M{{"¿Todo el lote\\ningresó a PT?"}}
+
+    M -- "No, faltan entregas" --> N["ODP permanece\\nABIERTA\\nEsperar más parciales"]
+    N --> K
+
+    M -- "Sí, lote completo" --> O
+
+    subgraph PT["✅ Bodega Producto Terminado"]
+        O["Ingresos parciales\\nacumulados = lote total"]
+    end
+
+    O --> P["Verificar saldos\\nCONF_XX = 0"]
+    P --> Q["Cierre ODP\\n+ costeo real del lote"]
+    Q --> Z([🏆 Fin])
+
+    style A   fill:#1D9E75,color:#E1F5EE,stroke:#0F6E56
+    style Z   fill:#1D9E75,color:#E1F5EE,stroke:#0F6E56
+    style AT1  fill:#A32D2D,color:#FCEBEB,stroke:#791F1F
+    style AT1B fill:#BA7517,color:#FAEEDA,stroke:#854F0B
+    style AT1C fill:#791F1F,color:#FCEBEB,stroke:#501313
+    style AT1D fill:#791F1F,color:#FCEBEB,stroke:#501313
+    style G   fill:#BA7517,color:#FAEEDA,stroke:#854F0B
+    style M   fill:#BA7517,color:#FAEEDA,stroke:#854F0B
+    style N   fill:#534AB7,color:#EEEDFE,stroke:#3C3489`;
+
+let rendered = false;
+window._initMermaid = async function() {
+  if (rendered) return;
+  rendered = true;
+  const { svg } = await mermaid.render('flow-mermaid', diagram);
+  document.getElementById('mermaid-container').innerHTML = svg;
+};
+</script>
+
 <script>
 function showPanel(name, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
+  if (name === 'flujograma' && window._initMermaid) window._initMermaid();
 }
 
 function toggleDetail(id) {
